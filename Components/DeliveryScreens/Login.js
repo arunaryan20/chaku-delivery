@@ -53,7 +53,7 @@ const Login = ({navigation}) => {
   };
 
   const signinClickHandler = () => {
-  
+    console.log('Res---- click');
     const data = {
       email: email,
       password: password,
@@ -68,7 +68,7 @@ const Login = ({navigation}) => {
         body: JSON.stringify(data),
       })
         .then(res => {
-          // console.log("Res----",res)
+          console.log('Res----', res);
           res
             .json()
             .then(data => {
@@ -79,6 +79,7 @@ const Login = ({navigation}) => {
                   data.user.email,
                   data.user.mobile,
                 );
+                return navigation.navigate('MainNav');
               } else {
                 Alert.alert('Enter valid email and password');
               }
@@ -105,8 +106,7 @@ const Login = ({navigation}) => {
           />
         </View>
       ) : (
-        <View style={{flex:1,height:'100%'}}>
-      
+        <View style={{flex: 1, height: '100%'}}>
           <View>
             <View style={{padding: '5%'}}>
               <Text
@@ -158,8 +158,6 @@ const Login = ({navigation}) => {
               </View>
             </View>
           </View>
-          
-         
         </View>
       )}
     </View>
@@ -176,7 +174,7 @@ const styles = StyleSheet.create({
     width: '100%',
     // padding: '5%',
     backgroundColor: 'white',
-    flex:1
+    flex: 1,
   },
   heading: {
     fontSize: 18,

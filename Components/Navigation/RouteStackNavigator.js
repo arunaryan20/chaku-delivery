@@ -4,6 +4,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Login from '../DeliveryScreens/Login';
 import Forgot from '../DeliveryScreens/Forgot';
 import MainBottom from '../DeliveryScreens/MainBottom';
+import Navigation from './Navigation';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,11 @@ const RouteStackNavigator = () => {
       <Stack.Screen
         name="Forgot"
         component={Forgot}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="MainNav"
+        component={Navigation}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

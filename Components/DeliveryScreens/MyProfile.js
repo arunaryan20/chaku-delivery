@@ -8,46 +8,45 @@ import {
   TextInput,
   ScrollView,
   Alert,
-} from 'react-native'
-import React, {useEffect, useState} from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import App from '../../App'
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import App from '../../App';
 
 const MyProfile = ({navigation}) => {
-  const [mytoken, setMyToken] = useState('')
-  const [modalVisibleP, setModalVisibleP] = useState(false)
-  const [modalVisibleD, setModalVisibleD] = useState(false)
-  const [oldpass, setOldPass] = useState('')
-  const [newpass, setNewPass] = useState('')
-  const [opc, setOpc] = useState(1)
-  const [name, setName] = useState('')
-  const [userEmail, setUserEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  const [mytoken, setMyToken] = useState('');
+  const [modalVisibleP, setModalVisibleP] = useState(false);
+  const [modalVisibleD, setModalVisibleD] = useState(false);
+  const [oldpass, setOldPass] = useState('');
+  const [newpass, setNewPass] = useState('');
+  const [opc, setOpc] = useState(1);
+  const [name, setName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const getData = async () => {
     try {
-      const value = await AsyncStorage.getItem('token')
-      const nm = await AsyncStorage.getItem('name')
-      const em = await AsyncStorage.getItem('email')
-      const ph = await AsyncStorage.getItem('phone')
+      const value = await AsyncStorage.getItem('token');
+      const nm = await AsyncStorage.getItem('name');
+      const em = await AsyncStorage.getItem('email');
+      const ph = await AsyncStorage.getItem('phone');
       if (value != null) {
-        setMyToken('Bearer ' + value)
-        setName(nm)
-        setUserEmail(em)
-        setPhone(ph)
+        setMyToken('Bearer ' + value);
+        setName(nm);
+        setUserEmail(em);
+        setPhone(ph);
       }
     } catch (e) {
-      console.log('This is get data error', e)
+      console.log('This is get data error', e);
     }
-  }
+  };
 
-    const storeData=async()=>{
-        try{
-          await AsyncStorage.removeItem("token")
-          await AsyncStorage.setItem("token",null)
-        }catch(error){
-          console.log(error)
-        }
+  const storeData = async () => {
+    try {
+      await AsyncStorage.removeItem('token', null);
+    } catch (error) {
+      console.log(error);
     }
+  };
 
   const logout = async () => {
     try {
@@ -62,47 +61,46 @@ const MyProfile = ({navigation}) => {
         .then(res => {
           res.json().then(data => {
             if (data.message === 'Successfully logged out') {
-             storeData()
-             
-               navigation.navigate('Login')
+              storeData();
+              navigation.navigate('MainNav');
             }
-          })
+          });
         })
         .catch(error => {
-          console.log('This is error------', error)
-        })
+          console.log('This is error------', error);
+        });
     } catch (error) {
-      console.log('catch error----', error)
+      console.log('catch error----', error);
     }
-  }
+  };
 
   useEffect(() => {
-    getData()
-  }, [mytoken])
+    getData();
+  }, [mytoken]);
   // console.log('Name=====', name, userEmail, phone)
 
   const closeClickHandler = () => {
-    setModalVisibleP(false)
-    setModalVisibleD(false)
-    setOpc(1)
-  }
+    setModalVisibleP(false);
+    setModalVisibleD(false);
+    setOpc(1);
+  };
 
   const changePasswordHandler = () => {
-    setModalVisibleP(true)
-    setOpc(0.1)
-  }
+    setModalVisibleP(true);
+    setOpc(0.1);
+  };
   const editDetailsClick = () => {
-    setModalVisibleD(true)
-    setOpc(0.1)
-  }
+    setModalVisibleD(true);
+    setOpc(0.1);
+  };
 
   const editProfileHandler = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const phoneRegex = /^\d{10}$/
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('email', userEmail)
-    formData.append('mobile', phone)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10}$/;
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', userEmail);
+    formData.append('mobile', phone);
 
     // const data = {
     //   name: name,
@@ -125,40 +123,39 @@ const MyProfile = ({navigation}) => {
                 body: JSON.stringify(formData),
               },
             ).then(res => {
-            
               res
                 .json()
                 .then(data => {
                   // console.log('Submit data------', JSON.stringify(data))
-                  if(data.message==="updated successfully"){
-                    Alert.alert("Profile updated successfully")
-                    setModalVisibleD(false)
-                    setOpc(1)
+                  if (data.message === 'updated successfully') {
+                    Alert.alert('Profile updated successfully');
+                    setModalVisibleD(false);
+                    setOpc(1);
                   }
                 })
                 .catch(error => {
-                  console.log('This is data section error---', error)
-                })
-            })
+                  console.log('This is data section error---', error);
+                });
+            });
           } catch (error) {
-            console.log('Catch error----', error)
+            console.log('Catch error----', error);
           }
         } else {
-          Alert.alert('Please enter your phone')
+          Alert.alert('Please enter your phone');
         }
       } else {
-        Alert.alert('Please enter your email')
+        Alert.alert('Please enter your email');
       }
     } else {
-      Alert.alert('Please enter your name')
+      Alert.alert('Please enter your name');
     }
-  }
+  };
 
   const submitClickHandler = async () => {
     const data = {
       old_psw: oldpass,
       new_psw: newpass,
-    }
+    };
     if (newpass.length > 6) {
       try {
         await fetch(
@@ -173,27 +170,25 @@ const MyProfile = ({navigation}) => {
             body: JSON.stringify(data),
           },
         ).then(res => {
-       
           res.json().then(data => {
             if (data.message == 'old password does not match') {
-              Alert.alert('old password does not match')
+              Alert.alert('old password does not match');
             } else if (data.message == 'password change successfully') {
-              Alert.alert('password change successfully')
-              setModalVisibleP(false)
-              setOpc(1)
+              Alert.alert('password change successfully');
+              setModalVisibleP(false);
+              setOpc(1);
             } else {
-              Alert.alert('Enter correct password')
+              Alert.alert('Enter correct password');
             }
-           
-          })
-        })
+          });
+        });
       } catch (error) {
-        console.log('Catch error-----', error)
+        console.log('Catch error-----', error);
       }
     } else {
-      Alert.alert('Enter password greater than 6 characters')
+      Alert.alert('Enter password greater than 6 characters');
     }
-  }
+  };
   return (
     <View style={{height: '100%', backgroundColor: 'white', opacity: opc}}>
       <View>
@@ -227,7 +222,7 @@ const MyProfile = ({navigation}) => {
             />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=>navigation.navigate("Terms")}>
+        <TouchableOpacity onPress={() => navigation.navigate('Terms')}>
           <View style={styles.protop}>
             <Text style={styles.txt3}>Terms and Conditions</Text>
             <Image
@@ -248,13 +243,13 @@ const MyProfile = ({navigation}) => {
       </View>
 
       <Modal
-        animationType='slide'
+        animationType="slide"
         transparent={true}
         visible={modalVisibleP}
         avoidKeyboard={false}
         onRequestClose={() => {
-          setModalVisibleP(!modalVisibleP)
-          setOpc(1)
+          setModalVisibleP(!modalVisibleP);
+          setOpc(1);
         }}>
         <View style={styles.modalv}>
           <TouchableOpacity
@@ -296,13 +291,13 @@ const MyProfile = ({navigation}) => {
       </Modal>
 
       <Modal
-        animationType='slide'
+        animationType="slide"
         transparent={true}
         visible={modalVisibleD}
         // avoidKeyboard={false}
         onRequestClose={() => {
-          setModalVisibleD(!modalVisibleD)
-          setOpc(1)
+          setModalVisibleD(!modalVisibleD);
+          setOpc(1);
         }}>
         <View style={styles.modalvD}>
           <TouchableOpacity
@@ -354,10 +349,10 @@ const MyProfile = ({navigation}) => {
         </View>
       </Modal>
     </View>
-  )
-}
+  );
+};
 
-export default MyProfile
+export default MyProfile;
 
 const styles = StyleSheet.create({
   // main: {
@@ -448,4 +443,4 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignSelf: 'center',
   },
-})
+});

@@ -1,15 +1,10 @@
 import {StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
-
+import React from 'react';
 
 import Navigation from './Components/Navigation/Navigation';
 
-
 const App = () => {
-
-  return (
-     <Navigation />
-  );
+  return <Navigation />;
 };
 
 export default App;
