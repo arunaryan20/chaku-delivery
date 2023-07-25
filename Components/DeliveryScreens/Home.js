@@ -9,32 +9,41 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native'
-import React, {useEffect, useState,useCallback} from 'react'
-import SelectDropdown from 'react-native-select-dropdown'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+  BackHandler,
+} from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import SelectDropdown from 'react-native-select-dropdown';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useFocusEffect} from '@react-navigation/native';
 
 const Home = ({navigation, route}) => {
-  const [modalVisible, setModalVisible] = useState(false)
-  const [searchtxt, setSearchText] = useState('')
-  const [searchdata, setSearchData] = useState(null)
-  const [mytoken, setMyToken] = useState('')
-  const [count,setCount]=useState(-1)
-  const [refreshing, setRefreshing] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [searchtxt, setSearchText] = useState('');
+  const [searchdata, setSearchData] = useState(null);
+  const [mytoken, setMyToken] = useState('');
+  const [count, setCount] = useState(-1);
+  const [refreshing, setRefreshing] = useState(false);
 
- 
+  useFocusEffect(
+    React.useCallback(() => {
+      BackHandler.addEventListener('hardwareBackPress', '');
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', '');
+      };
+    }, []),
+  );
 
   const getData = async () => {
     try {
-      const value = await AsyncStorage.getItem('token')
+      const value = await AsyncStorage.getItem('token');
       if (value != null) {
-        setMyToken('Bearer ' + value)
+        setMyToken('Bearer ' + value);
       }
     } catch (e) {
-      console.log('This is get data error', e)
+      console.log('This is get data error', e);
     }
-  }
-  console.log("Mytoken-----",mytoken)
+  };
+  console.log('Mytoken-----', mytoken);
 
   const notification_data = [
     {
@@ -85,10 +94,9 @@ const Home = ({navigation, route}) => {
       date: '10 jun 2023',
       title: 'This is a best application for services',
     },
-  ]
+  ];
 
   const fetchData = async () => {
-   
     try {
       await fetch(
         'https://shopninja.in/chaku/api/d_partner/get-subscriptions',
@@ -102,26 +110,29 @@ const Home = ({navigation, route}) => {
         },
       )
         .then(res => {
-          res.json().then(data => {
-            setSearchData(data.data.upcoming_services)
-          }).catch((error)=>{
-            console.log("Data Error-----",error)
-          })
+          res
+            .json()
+            .then(data => {
+              setSearchData(data.data.upcoming_services);
+            })
+            .catch(error => {
+              console.log('Data Error-----', error);
+            });
         })
         .catch(error => {
-          console.log('This is error=-----', error)
-        })
+          console.log('This is error=-----', error);
+        });
     } catch (error) {
-      console.log('This is catch error---', error)
+      console.log('This is catch error---', error);
     }
-  }
+  };
 
   useEffect(() => {
-    getData()
-    if(count==-1){
-      fetchData()
+    getData();
+    if (count == -1) {
+      fetchData();
     }
-    
+
     //  data = [
     //   {
     //     orderid:id,
@@ -134,262 +145,283 @@ const Home = ({navigation, route}) => {
     //  setSearchData(data);
 
     // console.log("Searchdata-------",searchdata)
-   
-  }, [mytoken,count])
+  }, [mytoken, count]);
 
-  useEffect(()=>{
-
-   
-
-           if(searchtxt!=""){
-      let result=searchdata.filter(function(item){
+  useEffect(() => {
+    if (searchtxt != '') {
+      let result = searchdata.filter(function (item) {
         return item.name.includes(searchtxt);
-      })
-     setSearchData(result);
-    }else{
+      });
+      setSearchData(result);
+    } else {
       fetchData();
-      setCount(-1)
+      setCount(-1);
     }
-  },[searchtxt])
+  }, [searchtxt]);
 
   // console.log('search data-----', searchdata)
 
-  const clickHadler = (item,item2) => {
-    navigation.navigate('OrderDetails',{data:item,status:item2})
-  }
+  const clickHadler = (item, item2) => {
+    navigation.navigate('OrderDetails', {data: item, status: item2});
+  };
   // console.log("id-----------",id);
-  const filterData = ['By status', 'By name', 'By date']
+  const filterData = ['By status', 'By name', 'By date'];
 
   const searchCloseHandler = () => {
-    setCount(-1)
-    fetchData()
-   
+    setCount(-1);
+    fetchData();
+
     // setSearchData(data);
-    setSearchText('')
-  }
+    setSearchText('');
+  };
   const notificationHandler = () => {
-    setModalVisible(true)
-  }
+    setModalVisible(true);
+  };
 
   const onRefresh = useCallback(() => {
     // setSearchData("")
-   
 
-    getData()
-  
-    setRefreshing(true)
-    
-    fetchData()
-    setTimeout(()=>{
-     setRefreshing(false)
-    },3000)
+    getData();
+
+    setRefreshing(true);
+
+    fetchData();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 3000);
   }, [mytoken]);
-    const filterClickHandler=(index)=>{
-      if(index==0){
-              const Result=searchdata.sort((a,b)=>{
-                   return a.service_status-b.service_status
-              })
-
-              setSearchData(Result)
-              setCount(0)
-      }
-
-
-      if(index==1){
-       const Result= searchdata.sort((a, b) => {
-            return a.name.localeCompare(b.name);
+  const filterClickHandler = index => {
+    if (index == 0) {
+      const Result = searchdata.sort((a, b) => {
+        return a.service_status - b.service_status;
       });
-        //  console.log("Result-------",Result)
-         setSearchData(Result)
-         setCount(1)
-      }
 
-      if(index==2){
-       const dateResult=searchdata.sort((a,b)=>{
-        var anewdate = a.service_date.split("-").reverse().join("-");
-        var bnewdate = b.service_date.split("-").reverse().join("-");
-          const dateA = new Date(anewdate)
-          const dateB = new Date(bnewdate)
-          return dateA - dateB;
-        });
-        // console.log("Result======",dateResult)
-        setSearchData(dateResult)
-        setCount(2)
-      }
+      setSearchData(Result);
+      setCount(0);
     }
 
+    if (index == 1) {
+      const Result = searchdata.sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      });
+      //  console.log("Result-------",Result)
+      setSearchData(Result);
+      setCount(1);
+    }
+
+    if (index == 2) {
+      const dateResult = searchdata.sort((a, b) => {
+        var anewdate = a.service_date.split('-').reverse().join('-');
+        var bnewdate = b.service_date.split('-').reverse().join('-');
+        const dateA = new Date(anewdate);
+        const dateB = new Date(bnewdate);
+        return dateA - dateB;
+      });
+      // console.log("Result======",dateResult)
+      setSearchData(dateResult);
+      setCount(2);
+    }
+  };
 
   return (
     <View style={styles.main}>
-      {searchdata==null? (<View style={styles.loader}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>):(
+      {searchdata == null ? (
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : (
         <View>
-      <View style={styles.head}>
-        <View style={styles.searchView}>
-          <TouchableOpacity style={{height: 45, width: 45, padding: 8}}>
-            <Image
-              source={require('../../Assets/icons/search.png')}
-              style={{height: 23, width: 23,tintColor:"#022A7B"}}
-            />
-          </TouchableOpacity>
-          <TextInput
-            value={searchtxt}
-            onChangeText={txt => setSearchText(txt)}
-            placeholder='Search here'
-            color={'#022A7B'}
-            placeholderTextColor={'#022A7B'}
-            style={{height: '100%', width: '100%'}}
-          />
-          <TouchableOpacity
-            onPress={() => searchCloseHandler()}
-            style={styles.searchclose}>
-            <Image
-              source={require('../../Assets/icons/close.png')}
-              style={{height: 15, width: 15, tintColor: '#022A7B'}}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.bellIcon}>
-          <TouchableOpacity onPress={() => notificationHandler()}>
-            <Image
-              source={require('../../Assets/icons/bell.png')}
-              style={{height: 25, width: 25,tintColor:"#022A7B"}}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={{flexDirection: 'row', padding: 10}}>
-        <Text style={styles.txtAllOrders}>Running Orders</Text>
-        <TouchableOpacity>
-          <View style={styles.filter}>
-            <SelectDropdown
-              defaultButtonText='Filter'
-              data={filterData}
-              dropdownStyle={{borderRadius: 5, width: 120}}
-              buttonStyle={{
-
-                borderRadius: 10,
-                height: 30,
-                width: 100,
-                elevation: 10,
-                backgroundColor: 'white',
-              }}
-              buttonTextStyle={{color: 'black', fontSize: 15}}
-              onSelect={(selectedItem, index) => filterClickHandler(index)}
-              buttonTextAfterSelection={(selectedItem, index) => {
-                return selectedItem
-              }}
-              rowTextForSelection={(item, index) => {
-                return item
-              }}
-            />
+          <View style={styles.head}>
+            <View style={styles.searchView}>
+              <TouchableOpacity style={{height: 45, width: 45, padding: 8}}>
+                <Image
+                  source={require('../../Assets/icons/search.png')}
+                  style={{height: 23, width: 23, tintColor: '#022A7B'}}
+                />
+              </TouchableOpacity>
+              <TextInput
+                value={searchtxt}
+                onChangeText={txt => setSearchText(txt)}
+                placeholder="Search here"
+                color={'#022A7B'}
+                placeholderTextColor={'#022A7B'}
+                style={{height: '100%', width: '100%'}}
+              />
+              <TouchableOpacity
+                onPress={() => searchCloseHandler()}
+                style={styles.searchclose}>
+                <Image
+                  source={require('../../Assets/icons/close.png')}
+                  style={{height: 15, width: 15, tintColor: '#022A7B'}}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.bellIcon}>
+              <TouchableOpacity onPress={() => notificationHandler()}>
+                <Image
+                  source={require('../../Assets/icons/bell.png')}
+                  style={{height: 25, width: 25, tintColor: '#022A7B'}}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        </TouchableOpacity>
-      </View >
-      <View style={{marginBottom:220}}>
-      <FlatList
-        data={searchdata}
-         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-         }
-        renderItem={({item}) => (
-          <View style={styles.flatmain}>
-            <TouchableOpacity onPress={() => clickHadler(item.id,item.service_status)}>
-              <View style={styles.flatin}>
-                <Text style={styles.txtid}>OrderID: {JSON.stringify(item.id)}</Text>
-                {            
-                item.service_status == 1 && (
-                  <Text style={[styles.txtunactive,{color:"red",}]}>Active</Text>
-                )
-                }
-                 {item.service_status == 5 && (
-                  <Text style={[styles.txtunactive,{color:"green"}]}>Completed</Text>
-                )} 
-                {
-                  item.service_status ==0 &&  (
-                    <Text style={[styles.txtunactive,{color:"blue"}]}>Pending</Text>
-                  )
-                }
+          <View style={{flexDirection: 'row', padding: 10}}>
+            <Text style={styles.txtAllOrders}>Running Orders</Text>
+            <TouchableOpacity>
+              <View style={styles.filter}>
+                <SelectDropdown
+                  defaultButtonText="Filter"
+                  data={filterData}
+                  dropdownStyle={{borderRadius: 5, width: 120}}
+                  buttonStyle={{
+                    borderRadius: 10,
+                    height: 30,
+                    width: 100,
+                    elevation: 10,
+                    backgroundColor: 'white',
+                  }}
+                  buttonTextStyle={{color: 'black', fontSize: 15}}
+                  onSelect={(selectedItem, index) => filterClickHandler(index)}
+                  buttonTextAfterSelection={(selectedItem, index) => {
+                    return selectedItem;
+                  }}
+                  rowTextForSelection={(item, index) => {
+                    return item;
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={{marginBottom: 220}}>
+            <FlatList
+              data={searchdata}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              renderItem={({item}) => (
+                <View style={styles.flatmain}>
+                  <TouchableOpacity
+                    onPress={() => clickHadler(item.id, item.service_status)}>
+                    <View style={styles.flatin}>
+                      <Text style={styles.txtid}>
+                        OrderID: {JSON.stringify(item.id)}
+                      </Text>
+                      {item.service_status == 1 && (
+                        <Text style={[styles.txtunactive, {color: 'red'}]}>
+                          Active
+                        </Text>
+                      )}
+                      {item.service_status == 5 && (
+                        <Text style={[styles.txtunactive, {color: 'green'}]}>
+                          Completed
+                        </Text>
+                      )}
+                      {item.service_status == 0 && (
+                        <Text style={[styles.txtunactive, {color: 'blue'}]}>
+                          Pending
+                        </Text>
+                      )}
 
-                {
-                  item.service_status !=1 && item.service_status!=5 && item.service_status!=0 && (
-                    <Text style={[styles.txtunactive,{color:"orange"}]}>Processing</Text>
-                  )
-                }
-                
-                {/* {item.orderStatus == 'Pending' && (
+                      {item.service_status != 1 &&
+                        item.service_status != 5 &&
+                        item.service_status != 0 && (
+                          <Text style={[styles.txtunactive, {color: 'orange'}]}>
+                            Processing
+                          </Text>
+                        )}
+
+                      {/* {item.orderStatus == 'Pending' && (
                   <Text style={styles.txtpending}>{item.orderStatus}</Text>
                 )}
                 {item.orderStatus == 'New' && (
                   <Text style={styles.txtnew}>{item.orderStatus}</Text>
                 )} */}
-              </View>
-              <View style={styles.flatin}>
-                <Text style={styles.txt1}>{item.name}</Text>
-                <Text style={styles.txt2}>₹ {item.amount}</Text>
-              </View>
-              <View style={styles.flatin}>
-                <Text style={styles.dates}>{item.service_date}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-       </View>
-      <Modal
-        animationType='slide'
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false)
-        }}>
-        <View style={{height: '100%', width: '100%', backgroundColor: 'white'}}>
-          <TouchableOpacity
-            style={styles.cross}
-            onPress={() => setModalVisible(false)}>
-            <Image
-              source={require('../../Assets/icons/close.png')}
-              style={{height: 18, width: 18}}
+                    </View>
+                    <View style={styles.flatin}>
+                      <Text style={styles.txt1}>{item.name}</Text>
+                      <Text style={styles.txt2}>₹ {item.amount}</Text>
+                    </View>
+                    <View style={styles.flatin}>
+                      <Text style={styles.dates}>{item.service_date}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
             />
-          </TouchableOpacity>
-          <Text style={styles.txtntf}>Notification</Text>
-        <View style={{marginBottom:30}}>
-          <FlatList
-            data={notification_data}
-            renderItem={({item}) => (
-              <View style={{marginBottom:10,marginTop:10}}>
-                  <View style={styles.ntfv}>
-                       <Text style={{color:"white",fontSize:18,fontWeight:"500"}}>{item.name}</Text>
-                       <Text style={{color:"white",fontSize:16,padding:5,opacity:0.8 }}>{item.title}</Text>
-                       <View style={{flexDirection:"row",gap:10}}>
-                          <Text style={{color:"white",opacity:0.5}}>{item.time}</Text>
-                          <Text style={{color:"white",opacity:0.5}}>{item.date}</Text>
-                       </View>
-                  </View>
-              </View>
-            )}
-          />
           </View>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              setModalVisible(false);
+            }}>
+            <View
+              style={{height: '100%', width: '100%', backgroundColor: 'white'}}>
+              <TouchableOpacity
+                style={styles.cross}
+                onPress={() => setModalVisible(false)}>
+                <Image
+                  source={require('../../Assets/icons/close.png')}
+                  style={{height: 18, width: 18}}
+                />
+              </TouchableOpacity>
+              <Text style={styles.txtntf}>Notification</Text>
+              <View style={{marginBottom: 30}}>
+                <FlatList
+                  data={notification_data}
+                  renderItem={({item}) => (
+                    <View style={{marginBottom: 10, marginTop: 10}}>
+                      <View style={styles.ntfv}>
+                        <Text
+                          style={{
+                            color: 'white',
+                            fontSize: 18,
+                            fontWeight: '500',
+                          }}>
+                          {item.name}
+                        </Text>
+                        <Text
+                          style={{
+                            color: 'white',
+                            fontSize: 16,
+                            padding: 5,
+                            opacity: 0.8,
+                          }}>
+                          {item.title}
+                        </Text>
+                        <View style={{flexDirection: 'row', gap: 10}}>
+                          <Text style={{color: 'white', opacity: 0.5}}>
+                            {item.time}
+                          </Text>
+                          <Text style={{color: 'white', opacity: 0.5}}>
+                            {item.date}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
         </View>
-      </Modal>
-      </View>
       )}
     </View>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
 
 const styles = StyleSheet.create({
   main: {
     backgroundColor: 'white',
     flex: 1,
   },
-  loader:{
-    flex:1,
-       alignItems:"center",
-       justifyContent:"center",
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   head: {
     height: 60,
@@ -428,7 +460,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: 'center',
     borderRadius: 8,
-    
   },
   flatin: {
     flexDirection: 'row',
@@ -447,7 +478,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-   dates: {
+  dates: {
     color: '#000000',
     paddingLeft: 5,
     fontSize: 12,
@@ -458,7 +489,7 @@ const styles = StyleSheet.create({
     paddingLeft: 220,
     fontSize: 15,
     position: 'absolute',
-    fontWeight:"500",
+    fontWeight: '500',
   },
   txtactive: {
     color: 'red',
@@ -516,7 +547,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f292f',
     borderRadius: 5,
     alignSelf: 'center',
-    padding:5,
+    padding: 5,
   },
   txtntf: {
     fontSize: 20,
@@ -525,4 +556,4 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingTop: 10,
   },
-})
+});
